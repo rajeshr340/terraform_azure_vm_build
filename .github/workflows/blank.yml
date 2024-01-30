@@ -72,4 +72,5 @@ jobs:
           VERSION_PREFIX="v"
           echo $VERSION_PREFIX
           echo ${{ env.latest_tag }}
+          
 
