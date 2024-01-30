@@ -11,7 +11,7 @@ jobs:
 
       - name: Process tag
         run: |
-          tag="v4"  # Replace with your actual tag variable
+          tag="v4.1"  # Replace with your actual tag variable
           IFS="." read -ra tag_parts <<< "$tag"
 
           if [[ ${#tag_parts[@]} -gt 1 ]]; then
