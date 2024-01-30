@@ -1,0 +1,27 @@
+name: Process Tags
+
+on:
+  workflow_dispatch:
+    
+jobs:
+  process-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Process tag
+        run: |
+          tag="v4"  # Replace with your actual tag variable
+          IFS="." read -ra tag_parts <<< "$tag"
+
+          if [[ ${#tag_parts[@]} -gt 1 ]]; then
+            # Increment second position value
+            second_value="${tag_parts[1]}"
+            new_second_value=$((second_value + 1))
+            new_tag="${tag_parts[0]}.${new_second_value}"
+          else
+            # Append with 1
+            new_tag="${tag}.1"
+          fi
+
+          echo "New tag: $new_tag"  # Output the new tag
