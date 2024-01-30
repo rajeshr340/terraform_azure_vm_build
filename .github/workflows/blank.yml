@@ -26,12 +26,11 @@ jobs:
           VERSION_MAJOR_MINOR=$(echo "${{ env.latest_tag }}" | sed 's/^v//')
           echo $VERSION_MAJOR_MINOR
           NEW_TAG=$((VERSION_MAJOR_MINOR + 1))
-
-          NEW_TAG="${VERSION_PREFIX}${VERSION_MAJOR_MINOR}.${VERSION_PATCH}"
           echo "Generated new tag: $NEW_TAG"
           echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+
       - name: Push new tag
-        if: steps.generate_tag.outputs.NEW_TAG != ''
+        if: ${{env.NEW_TAG != ''}}
         run: |
           git tag ${{ env.NEW_TAG }}
           git push origin ${{ env.NEW_TAG }}
