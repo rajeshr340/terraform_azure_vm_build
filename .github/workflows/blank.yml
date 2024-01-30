@@ -12,7 +12,7 @@ jobs:
 
       - name: Get latest tag
         run: |
-          VERSION=$(git tag --sort=-versioner::refname | head -n 1)
+          VERSION=$(git describe --tags --abbrev=0)
           echo "Latest tag: $VERSION"
 
       # Extract major, minor, and patch version (assuming semantic versioning)
