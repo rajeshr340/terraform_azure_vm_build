@@ -9,7 +9,7 @@ jobs:
   fresh_deployment:
     name: Generate Git Tag
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.message, 'approved')
+    
     steps:
       - uses: actions/checkout@v3
         with:
