@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+permissions: 
+  write-all
 jobs:
   build:
     name: Generate Git Tag
@@ -27,7 +29,7 @@ jobs:
           echo $VERSION_MAJOR_MINOR
           NEW_TAG=$((VERSION_MAJOR_MINOR + 1))
           echo "Generated new tag: $NEW_TAG"
-          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+          echo "NEW_TAG=$VERSION_PREFIX$NEW_TAG" >> $GITHUB_ENV
 
       - name: Push new tag
         if: ${{env.NEW_TAG != ''}}
