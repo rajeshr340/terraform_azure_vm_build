@@ -7,6 +7,8 @@ jobs:
   build:
     name: Generate Git Tag
     runs-on: ubuntu-latest
+	outputs:
+        OLD_TAG: ${{ steps.get_latest_tag.outputs.GIT_ACTION }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -14,12 +16,14 @@ jobs:
         id: get_latest_tag
         run: |
           git fetch --tags
-          echo "::set-output name=latest_tag::$(git describe --tags --abbrev=0)"
+          echo "OLD_TAG = $(git describe --tags --abbrev=0)"
+		  echo "OLD_TAG=$OLD_TAG" >> $GITHUB_OUTPUT
+		  
       - name: Generate new tag
         id: generate_tag
         run: |
           VERSION_PREFIX="v"
-          VERSION_MAJOR_MINOR=$(echo "${{ steps.get_latest_tag.outputs.latest_tag }}" | sed 's/^v//')
+          VERSION_MAJOR_MINOR=$(echo "${{ steps.get_latest_tag.outputs.OLD_TAG }}" | sed 's/^v//')
           VERSION_PATCH=$(git tag --list "${VERSION_PREFIX}${VERSION_MAJOR_MINOR}.*" --sort=-version:refname | tail -n 1 | grep -oE '[0-9]+$')
           if [ -z "$VERSION_PATCH" ]; then
             VERSION_PATCH=0
