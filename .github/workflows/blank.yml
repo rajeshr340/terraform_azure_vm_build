@@ -13,8 +13,7 @@ jobs:
       - name: Get latest tag
         id: get_latest_tag
         run: |
-          git fetch --tags --always
-          git describe --tags --abbrev=0
+          git fetch --tags 
           echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV                      
       - name: Generate new tag
         id: generate_tag
