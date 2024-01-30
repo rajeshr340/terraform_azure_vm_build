@@ -59,7 +59,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          
+
       - name: Get latest tag
         id: get_latest_tag
         run: | 
@@ -71,6 +71,24 @@ jobs:
         run: |
           VERSION_PREFIX="v"
           echo $VERSION_PREFIX
-          echo ${{ env.latest_tag }}
+          echo 
+          tag = ${{ env.latest_tag }}
 
+          IFS="." read -ra tag_parts <<< "$tag"
 
+          if [[ ${#tag_parts[@]} -gt 1 ]]; then
+            # Increment second position value
+            second_value="${tag_parts[1]}"
+            new_second_value=$((second_value + 1))
+            new_tag="${tag_parts[0]}.${new_second_value}"
+          else
+            # Append with 1
+            new_tag="${tag}.1"
+          fi
+
+          echo "New tag: $new_tag"  # Output the new tag
+          
+          git tag $new_tag
+          git push origin $new_tag
+
+      
