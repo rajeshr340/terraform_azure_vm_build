@@ -72,7 +72,7 @@ jobs:
           VERSION_PREFIX="v"
           echo $VERSION_PREFIX
           echo 
-          tag = ${{ env.latest_tag }}
+          tag="${{ env.latest_tag }}"
 
           IFS="." read -ra tag_parts <<< "$tag"
 
@@ -87,7 +87,7 @@ jobs:
           fi
 
           echo "New tag: $new_tag"  # Output the new tag
-          
+
           git tag $new_tag
           git push origin $new_tag
 
