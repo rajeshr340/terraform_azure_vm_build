@@ -15,12 +15,14 @@ jobs:
         run: |
           git fetch --tags
           git describe --tags --abbrev=0
-          echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+          echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV                      
       - name: Generate new tag
         id: generate_tag
         run: |
+          echo ${{ env.latest_tag }}
+          
           VERSION_PREFIX="v"
-          VERSION_MAJOR_MINOR=$(echo "v1" | sed 's/^v//')
+          VERSION_MAJOR_MINOR=$(echo "${{ env.latest_tag }}" | sed 's/^v//')
           VERSION_PATCH=$(git tag --list "${VERSION_PREFIX}${VERSION_MAJOR_MINOR}.*" --sort=-version:refname | tail -n 1 | grep -oE '[0-9]+$')
           if [ -z "$VERSION_PATCH" ]; then
             VERSION_PATCH=0
