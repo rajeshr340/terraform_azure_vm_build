@@ -52,6 +52,14 @@ jobs:
             - Second Change
           draft: false
           prerelease: false
+      - name: Create release branch
+        run: |
+            git checkout -b "release/release-${{ env.NEW_TAG }}"
+            echo "Created release branch: release/release-${{ env.NEW_TAG }}"
+  
+      - name: Push release branch
+        run: git push origin --tags "release/release-${{ env.NEW_TAG }}"
+
   bug_fix:
      runs-on: ubuntu-latest
      if: contains(github.event.head_commit.message, 'bug')
@@ -87,8 +95,34 @@ jobs:
           fi
 
           echo "New tag: $new_tag"  # Output the new tag
+          echo "NEW_BUG_TAG=$new_tag" >> $GITHUB_ENV
 
-          git tag $new_tag
-          git push origin $new_tag
+      - name: Push new tag
+        if: ${{env.NEW_BUG_TAG != ''}}
+        run: |
+          git tag ${{ env.NEW_BUG_TAG }}
+          git push origin ${{ env.NEW_BUG_TAG }}
 
-      
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.NEW_BUG_TAG }}
+          release_name: release-${{ env.NEW_BUG_TAG }}
+          body: |
+            Changes in this Release
+            - First Change
+            - Second Change
+          draft: false
+          prerelease: false
+
+      - name: Create release branch
+        run: |
+          git checkout -b "release/release-${{ env.NEW_BUG_TAG }}"
+          echo "Created release branch: release/release-${{ env.NEW_BUG_TAG }}"
+
+      - name: Push release branch
+        run: git push origin --tags "release/release-${{ env.NEW_BUG_TAG }}"
+    
