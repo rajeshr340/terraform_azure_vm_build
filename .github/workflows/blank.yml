@@ -2,7 +2,7 @@ name: Generate Git Tag
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   build:
     name: Generate Git Tag
