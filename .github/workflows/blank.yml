@@ -16,9 +16,9 @@ jobs:
         id: get_latest_tag
         run: |
           git fetch --tags
-          echo "OLD_TAG = $(git describe --tags --abbrev=0)"
-		  echo "OLD_TAG=$OLD_TAG" >> $GITHUB_OUTPUT
-		  
+          OLD_TAG = $(git describe --tags --abbrev=0)          		      
+          echo "OLD_TAG=$OLD_TAG" >> $GITHUB_OUTPUT  
+
       - name: Generate new tag
         id: generate_tag
         run: |
