@@ -63,7 +63,7 @@ jobs:
           fetch-depth: 0
       - name: Get latest tag
         id: get_latest_tag
-        run: |
+        run: | 
           git fetch --tags
           echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
       - name: Generate new tag
@@ -72,5 +72,5 @@ jobs:
           VERSION_PREFIX="v"
           echo $VERSION_PREFIX
           echo ${{ env.latest_tag }}
-          
+
 
