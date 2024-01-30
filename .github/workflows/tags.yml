@@ -3,8 +3,8 @@ name: Create Tag and Release
 on:
   push:
     branches:
-      - main  # Change this to your main branch name
-      - Development
+      - F1  # Change this to your main branch name
+      - F2
 
 jobs:
   create_tag_and_release:
