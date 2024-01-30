@@ -8,7 +8,7 @@ jobs:
     name: Generate Git Tag
     runs-on: ubuntu-latest
     outputs:
-      OLD_TAG: ${{ steps.get_latest_tag.outputs.GIT_ACTION }}
+      OLD_TAG: ${{ steps.get_latest_tag.outputs.OLD_TAG }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -16,7 +16,7 @@ jobs:
         id: get_latest_tag
         run: |
           git fetch --tags
-          OLD_TAG = $(git describe --tags --abbrev=0)          		      
+          echo "OLD_TAG = $(git describe --tags --abbrev=0)"          		      
           echo "OLD_TAG=$OLD_TAG" >> $GITHUB_OUTPUT  
 
       - name: Generate new tag
