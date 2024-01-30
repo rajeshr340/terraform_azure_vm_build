@@ -55,8 +55,7 @@ jobs:
   bug_fix:
      name: Updating Tag
      needs: fresh_deployment
-     runs-on: ubuntu-latest
-     if: contains(github.event.head_commit.message, 'bug fix')
+     runs-on: ubuntu-latest     
      steps:
       - uses: actions/checkout@v3
         with:
@@ -64,6 +63,7 @@ jobs:
       - name: Get latest tag
         id: get_latest_tag
         run: | 
+          echo "${{github.event.head_commit.message}}"
           git fetch --tags
           echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
       - name: Generate new tag
