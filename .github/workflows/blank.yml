@@ -20,16 +20,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         VERSION_PREFIX="v"
-        echo "VERSION_PREFIX"
+        echo "$VERSION_PREFIX"
         VERSION_MAJOR_MINOR="1.0"
-        echo "VERSION_MAJOR_MINOR"
+        echo "$VERSION_MAJOR_MINOR"
         VERSION_PATCH=$(git tag --list "${VERSION_PREFIX}${VERSION_MAJOR_MINOR}.*" --sort=-version:refname | head -n 1 | grep -oE '[0-9]+$')
+        echo "$VERSION_PATCH"
         if [ -z "$VERSION_PATCH" ]; then
           VERSION_PATCH=0
         else
           VERSION_PATCH=$((VERSION_PATCH + 1))
         fi
         NEW_TAG="${VERSION_PREFIX}${VERSION_MAJOR_MINOR}.${VERSION_PATCH}"
+        echo "$NEW_TAG"
         echo "Generated new tag: $NEW_TAG"
         echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
 
