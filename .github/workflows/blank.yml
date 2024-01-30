@@ -1,40 +1,42 @@
-name: Generate Git Tag
+name: Increment Version Tag
+
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]  # Change this to your desired branch(es)
+
 jobs:
-  build:
-    name: Generate Git Tag
+  increment-version:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
-      - name: Generate new tag
-        id: generate_tag
+      - name: Get latest tag
         run: |
-          git fetch --tags
-          CURRENT_TAG=$(git describe --abbrev=0 --tags)
-          echo $CURRENT_TAG
-          VERSION_PREFIX="v"
-          VERSION_MAJOR_MINOR=$(echo $latest_tag | sed 's/^v//')
-          VERSION_PATCH=$(git tag --list "${VERSION_PREFIX}${VERSION_MAJOR_MINOR}.*" --sort=-version:refname | tail -n 1 | grep -oE '[0-9]+$')
-          
-          echo $VERSION_PREFIX
-          echo $VERSION_MAJOR_MINOR
-          echo $VERSION_PATCH
+          VERSION=$(git tag --sort=-versioner::refname | head -n 1)
+          echo "Latest tag: $VERSION"
 
-          if [ -z "$VERSION_PATCH" ]; then
-            VERSION_PATCH=0
-          else
-            VERSION_PATCH=$((VERSION_PATCH + 1))
-          fi
-          NEW_TAG="${VERSION_PREFIX}${VERSION_MAJOR_MINOR}.${VERSION_PATCH}"
-          echo "Generated new tag: $NEW_TAG"
-          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
-      - name: Push new tag
-        if: steps.generate_tag.outputs.NEW_TAG != ''
+      # Extract major, minor, and patch version (assuming semantic versioning)
+      - name: Extract version components
         run: |
-          git tag ${{ env.NEW_TAG }}
-          git push origin ${{ env.NEW_TAG }}
+          MAJOR=$(echo "$VERSION" | cut -d'.' -f1)
+          MINOR=$(echo "$VERSION" | cut -d'.' -f2)
+          PATCH=$(echo "$VERSION" | cut -d'.' -f3)
+          echo "Major: $MAJOR, Minor: $MINOR, Patch: $PATCH"
+
+      # Increment patch version by default
+      - name: Increment patch version
+        run: |
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+          echo "New version: $NEW_VERSION"
+
+      # Optionally, customize increment logic (e.g., for major/minor increments)
+      # - name: Customize increment logic (optional)
+      #   run: |
+      #     # Implement your custom logic here to modify NEW_VERSION based on tags or other factors
+
+      - name: Create new tag
+        run: git tag -a "$NEW_VERSION" -m "New version $NEW_VERSION"
+
+      - name: Push tags
+        run: git push origin --tags
