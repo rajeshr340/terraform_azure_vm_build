@@ -6,7 +6,7 @@ on:
 permissions: 
   write-all
 jobs:
-  build:
+  fresh_deployment:
     name: Generate Git Tag
     runs-on: ubuntu-latest
     if: contains(github.event.head_commit.message, 'approved')
@@ -52,3 +52,24 @@ jobs:
             - Second Change
           draft: false
           prerelease: false
+  bug_fix:
+     name: Updating Tag
+     needs: fresh_deployment
+     runs-on: ubuntu-latest
+     if: contains(github.event.head_commit.message, 'bug fix')
+     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Get latest tag
+        id: get_latest_tag
+        run: |
+          git fetch --tags
+          echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+      - name: Generate new tag
+        id: generate_tag
+        run: |
+          VERSION_PREFIX="v"
+          echo $VERSION_PREFIX
+          echo ${{ env.latest_tag }}
+
