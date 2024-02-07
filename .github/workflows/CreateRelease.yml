@@ -1,0 +1,143 @@
+#==============================================================================
+# * Kyndryl Confidential
+# *
+# * Description: GitHub action workflow to Move code from Main branch to Kyndryl Main branch to deploy resource
+# *              And will tag repo with major version for new deployment and minor version for bug
+# *              Workflow will be triggered when code merged to main branch
+# *
+# * Author : rajesh.r11@kyndryl.com
+# * (C) COPYRIGHT IBM CORP. 2017, 2022, 2023
+# * The source code for this program is not published or otherwise
+# * divested of its trade secrets, irrespective of what has been
+# * deposited with the U.S. Copyright Office. 
+# ***************************** End Standard Header *****************************
+
+name: 04-Clone And Push to Deploy Resource
+run-name: Push code from main branch for Resource deployment
+on: 
+ push: 
+  branches:  
+   - 'main'
+  paths:
+    - 'iac/**'   
+ workflow_dispatch: 
+
+jobs:
+  fresh_deployment:
+    name: Generate Git Tag
+    if: contains(github.event.head_commit.message, 'feature')
+    runs-on: ${{ vars.GIT_RUNNER }}       
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: get_latest_tag
+        run: |
+          echo "${{github.event.head_commit.message}}"       
+          git fetch --tags
+          echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+      - name: Generate new tag
+        id: generate_tag
+        run: |
+          VERSION_PREFIX="v"
+          echo $VERSION_PREFIX
+
+          VERSION_MAJOR_MINOR=$(echo "${{ env.latest_tag }}" | sed 's/^v//')
+          echo $VERSION_MAJOR_MINOR
+          NEW_TAG=$((VERSION_MAJOR_MINOR + 1))
+          echo "Generated new tag: $NEW_TAG"
+          echo "NEW_TAG=$VERSION_PREFIX$NEW_TAG" >> $GITHUB_ENV
+
+      - name: Push new tag
+        if: ${{env.NEW_TAG != ''}}
+        run: |
+          git tag ${{ env.NEW_TAG }}
+          git push origin ${{ env.NEW_TAG }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.NEW_TAG }}
+          release_name: release-${{ env.NEW_TAG }}
+          body: |
+            Changes in this Release
+            - First Change
+            - Second Change
+          draft: false
+          prerelease: false
+      - name: Create release branch
+        run: |
+            git checkout -b "release-${{ env.NEW_TAG }}"
+            echo "Created release branch: release-${{ env.NEW_TAG }}"
+  
+      - name: Push release branch
+        run: git push origin --tags "release-${{ env.NEW_TAG }}"
+
+  bug_fix:
+     runs-on: ${{ vars.GIT_RUNNER }}
+     if: contains(github.event.head_commit.message, 'bug')
+     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: get_latest_tag
+        run: | 
+          echo "${{github.event.head_commit.message}}"
+          git fetch --tags
+          echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+      - name: Generate new tag
+        id: generate_tag
+        run: |
+          VERSION_PREFIX="v"
+          echo $VERSION_PREFIX
+          echo 
+          tag="${{ env.latest_tag }}"
+
+          IFS="." read -ra tag_parts <<< "$tag"
+
+          if [[ ${#tag_parts[@]} -gt 1 ]]; then
+            # Increment second position value
+            second_value="${tag_parts[1]}"
+            new_second_value=$((second_value + 1))
+            new_tag="${tag_parts[0]}.${new_second_value}"
+          else
+            # Append with 1
+            new_tag="${tag}.1"
+          fi
+
+          echo "New tag: $new_tag"  # Output the new tag
+          echo "NEW_BUG_TAG=$new_tag" >> $GITHUB_ENV
+
+      - name: Push new tag
+        if: ${{env.NEW_BUG_TAG != ''}}
+        run: |
+          git tag ${{ env.NEW_BUG_TAG }}
+          git push origin ${{ env.NEW_BUG_TAG }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.NEW_BUG_TAG }}
+          release_name: release-${{ env.NEW_BUG_TAG }}
+          body: |
+            Changes in this Release
+          draft: false
+          prerelease: false
+
+      - name: Create release branch
+        run: |
+          git checkout -b "release-${{ env.NEW_BUG_TAG }}"
+          echo "Created release branch: release-${{ env.NEW_BUG_TAG }}"
+
+      - name: Push release branch
+        run: git push origin --tags "release-${{ env.NEW_BUG_TAG }}"
